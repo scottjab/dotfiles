@@ -1,0 +1,23 @@
+#
+# Boolean options
+#
+
+for option (
+    autocd # Less typing is better typing
+    no_automenu # Don't cycle thru options on subsequent Tabs
+    extended_history # Store timestamps, elapsed time for commands
+    append_history # Keep history from all shells, not just the last one to exit
+    share_history # Interleave history between shells
+    hist_ignore_dups # Don't add contiguous duplicates to history
+) setopt $option
+
+
+#
+# Other options
+#
+
+# Use Emacs style line editing for now.
+bindkey -e
+# Don't trush hash cache when tab completing commands (otherwise new installs
+# won't show up until a new shell loads or 'rehash' is run)
+zstyle ":completion:*:commands" rehash 1

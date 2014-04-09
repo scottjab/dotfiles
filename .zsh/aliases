@@ -1,0 +1,140 @@
+# Sudo
+alias svim='sudo vim'
+alias stail="sudo tail"
+alias svs="sudo supervisorctl"
+alias ss='sudo -u'
+
+# Package managers
+alias apt-get='sudo apt-get'
+alias apt-cache='sudo apt-cache'
+alias aptitude='sudo aptitude'
+alias apt-file='sudo apt-file'
+alias ash='aptitude show'
+alias ai='aptitude install'
+alias as='aptitude search'
+alias au='aptitude update'
+alias ap='aptitude purge'
+alias dl='dpkg --list'
+alias pi='pip install'
+alias pie='pip install -e'
+alias pu='pip uninstall'
+alias b='brew'
+alias bi='brew install'
+alias bs='brew search'
+alias bin='brew info'
+alias yum='sudo yum'
+
+# Git
+if [[ -e `which hub 2>/dev/null` ]]; then
+    alias git=hub
+    compdef hub=git
+fi
+alias gb='git branch'
+alias gba='git branch -a'
+alias gc='git commit'
+alias gcm='git commit -m'
+alias gca='git commit -a'
+alias gcam='git commit -a -m'
+alias gd='git diff'
+alias gdc='git diff --cached'
+alias gl='git log'
+alias glg="git log --graph --pretty=format:'%Cblue%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
+alias gpl='git pull'
+alias gps='git push'
+alias gs='git status'
+alias gsh='git show'
+alias gt='git tag'
+alias gr='git rel; git wtf -r -L'
+alias ga='git add'
+alias gap='git add -p'
+alias gco='git checkout'
+alias gst='git stash'
+alias gsa='git stash apply'
+alias gm='git merge'
+alias gf='git fetch'
+alias grs='git reset HEAD .'
+alias gch='git cherry-pick'
+alias gcx='git cherry-pick -enx'
+
+function gcamp() {
+    gcam "$1" && gps
+}
+
+function gu() {
+    CURRENT_BRANCH=`git symbolic-ref --short HEAD`
+    TARGET=master
+    METHOD=${1:-merge}
+    gco "$TARGET" && gpl && gco "$CURRENT_BRANCH" && git $METHOD "$TARGET"
+}
+
+function mg() {
+    find . \
+        -mindepth 1 -maxdepth 2 \
+        -type d -name .git \
+    | while read git_dir; do
+        dir=`dirname $git_dir`
+        echo $dir:
+        cd $dir
+        git $*
+        cd - >/dev/null
+        echo ""
+    done
+}
+
+# RubyGems
+alias gems='gem search -b'
+alias geml='gem list -l'
+alias gemi='gem install -b'
+alias gemu='gem uninstall'
+
+# Python
+alias rmv='deactivate; rmvirtualenv'
+
+# Misc
+alias tree='tree -Ca -I ".git|*.pyc|*.swp|dist|*.egg-info"'
+alias screen='TERM=screen-256color screen'
+alias rmpyc='rm **/*.pyc'
+alias v=vagrant
+alias be='bundle exec'
+alias ack='ack -a'
+alias osc='openstack-compute'
+alias history='fc -l 1' # Force display of entire zsh history
+alias l=ls
+alias sshuttle='(which tmux >/dev/null && tmux rename-window sshuttle); sshuttle -v -r git.bitprophet.org 0/0'
+alias lc='librarian-chef'
+alias ports='sudo lsof -nP 2>/dev/null | grep LISTEN | sed -re "s/ +/ /g" | cut -d " " -f 1,3,9 | sort -u | column -t'
+alias proxy='squid -f ~/etc/squid.conf && echo "Squid started."'
+alias th='teamocil --here'
+
+# Functions
+
+function cycle() {
+    v destroy -f $1 && v up $1
+}
+
+function json() {
+    CMD="curl -ks $2 \"$1\" | python -m json.tool"
+    if which pygmentize > /dev/null; then
+        eval "$CMD | pygmentize -l javascript"
+    else
+        eval $CMD
+        echo "You didn't have pygmentize installed, so no colors for you!"
+    fi
+}
+
+# File pull request via 'hub', automatically inserting current HEAD as the
+# source and the 'origin' remote account name as the source account.
+# Useful for company-owned repos where hub's default assumptions don't work.
+function pull() { # 'pr' already exists :(
+    HEAD=`git symbolic-ref HEAD`
+    # Probably a better way to do this. /lazy
+    ACCOUNT=`git remote show -n origin | grep "Fetch URL" | cut -d ':' -f 3 | cut -d '/' -f 1`
+    git push origin HEAD
+    git pull-request -b ${1:-master} -h $ACCOUNT:${HEAD#refs/heads/} $2
+}
+
+# Create new local branch based off pull request X.
+function pr-branch() {
+    git fetch origin pull/$1/head:$1-int
+    gco $1-int
+}

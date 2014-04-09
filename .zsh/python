@@ -1,0 +1,80 @@
+#
+# Virtualenvwrapper
+#
+
+# Don't blow up when PYTHONDONTWRITEBYTECODE is set
+export VIRTUALENV_USE_DISTRIBUTE=1
+# Not sure why the hell the docs say one thing and the code another.
+# Set both so it always works.
+export VIRTUALENV_DISTRIBUTE=1
+
+export WORKON_HOME=~/.virtualenvs
+test -d $WORKON_HOME || mkdir $WORKON_HOME
+
+
+#
+# Lazy-loading of virtualenvwrapper itself.  Copied from
+# https://gist.github.com/2483204 which is itself a tweak of
+# http://blog.arongriffis.com/post/dynamic-virtualenvwrapper
+#
+if [[ $(type -w workon) != "workon: function" ]]; then
+  virtualenv_funcs=( workon deactivate mkvirtualenv )
+
+  load_virtualenv() {
+    # If these already exist, then virtualenvwrapper won't override them.
+    unset -f "${virtualenv_funcs[@]}"
+
+    # virtualenvwrapper doesn't load if PYTHONPATH is set, because the
+    # virtualenv python doesn't have the right modules.
+    declare _pp="$PYTHONPATH"
+    unset PYTHONPATH
+
+    # Attempt to load virtualenvwrapper from its many possible sources...
+    _try_source() { [[ -f $1 ]] || return; source "$1"; return 0; }
+    _try_source /usr/local/bin/virtualenvwrapper.sh || \
+    _try_source /etc/bash_completion.d/virtualenvwrapper || \
+    _try_source /usr/bin/virtualenvwrapper.sh
+    return_status=$?
+    unset -f _try_source
+
+    # Restore PYTHONPATH
+    [[ -n $_pp ]] && export PYTHONPATH="$_pp"
+
+    # Did loading work?
+    if [[ $return_status != 0 || $(type -w "$1") != "$1: function" ]]; then
+      echo "Error loading virtualenvwrapper, sorry" >&2
+      return $return_status
+    fi
+
+    # Chain-load the appropriate function
+    "$@"
+  }
+
+  for v in "${virtualenv_funcs[@]}"; do
+    eval "$v() { load_virtualenv $v \"\$@\"; }"
+  done
+fi
+#
+# End of cribbed code
+#
+
+
+#
+# Pip env vars
+#
+
+# Respect my virtualenvs, please
+export PIP_RESPECT_VIRTUALENV=true
+export PIP_VIRTUALENV_BASE=$WORKON_HOME
+# Don't litter pip_log.txt files in cwd!
+export PIP_LOG_FILE='/tmp/pip-log.txt'
+# Use a cache
+export PIP_DOWNLOAD_CACHE='/tmp/pip_cache'
+
+
+#
+# Python env vars
+#
+
+# Only affects 2.6 but should be harmless in 2.5
+export PYTHONDONTWRITEBYTECODE=1
