@@ -18,10 +18,12 @@ DOTFILES=(
     history
     python
     ruby
+    rust
     wk
     prompt
     zmv
     go
+    atuin
     local
 )
 for file in $DOTFILES; do

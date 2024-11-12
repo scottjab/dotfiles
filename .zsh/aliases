@@ -106,6 +106,9 @@ alias ports='sudo lsof -nP 2>/dev/null | grep LISTEN | sed -re "s/ +/ /g" | cut 
 alias proxy='squid -f ~/etc/squid.conf && echo "Squid started."'
 alias th='teamocil --here'
 
+# Golang
+alias lgo='GOARCH=amd64 GOOS=linux go'
+
 # Functions
 
 function cycle() {
