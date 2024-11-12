@@ -7,10 +7,11 @@ export DISPLAY=:0.0
 export EDITOR=vim
 
 # PATH
+brew_path=/opt/homebrew/bin:/opt/homebrew/sbin
 my_path=$HOME/bin
 local_path=/usr/local/bin:/usr/local/sbin
 super_path=/sbin:/usr/sbin
-export PATH=$local_path:$PATH:$super_path:$my_path
+export PATH=$local_path:$brew_path:$PATH:$super_path:$my_path
 
 # Homebrew temp folder
 export HOMEBREW_TEMP=/private/tmp/
